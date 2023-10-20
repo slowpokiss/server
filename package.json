@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "author": "coursar",
+  "license": "ISC",
+  "scripts": {
+    "watch": "forever -w server.js",
+    "start": "forever server.js"
+  },
+  "dependencies": {
+    "forever": "^4.0.3",
+    "koa": "^2.14.2",
+    "koa-body": "^6.0.1",
+    "uuid": "^9.0.1"
+  },
+  "engines": {
+    "node": "16.x"
+  }
+}
