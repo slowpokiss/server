@@ -11,6 +11,21 @@ app.use(koaBody({
   multipart: true
 }));
 
+// GET ?method=loadPage
+app.use((ctx, next) => {
+  if (ctx.method !== "GET" || ctx.request.query.method !== 'loadPage') {
+    next();
+    return;
+  }
+
+  ctx.response.set('Access-Control-Allow-Origin', '*');
+  cards = [];
+  ctx.response.body = 'page updated';
+  next();
+})
+
+
+
 // POST ?method=createTicket
 app.use(async (ctx, next) => {
   if (ctx.method !== 'POST' || ctx.request.query.method !== 'createTicket') {
@@ -40,11 +55,9 @@ app.use(async (ctx, next) => {
     await next();
     return;
   }
-
   const { id } = ctx.request.query;
-  cards = cards.filter(ticket => ticket.id !== id);
-  console.log(cards);
 
+  cards = cards.filter(ticket => ticket.id !== id);
   ctx.response.set('Access-Control-Allow-Origin', '*');
   ctx.response.body = 'Ticket deleted';
   next()
@@ -63,14 +76,30 @@ app.use(async (ctx, next) => {
   next()
 });
 
+
+// GET ?method=ticketById
+app.use(async (ctx, next) => {
+  if (ctx.method !== 'GET' || ctx.request.query.method !== 'ticketById') {
+    await next();
+    return;
+  }
+
+  const { id } = ctx.request.query;
+  let ticket = cards.find(el => el.id === id);
+
+  ctx.response.set('Access-Control-Allow-Origin', '*');
+  ctx.response.type = 'application/json';
+  ctx.response.body = JSON.stringify(ticket);
+  next()
+});
+
+
 const server = http.createServer(app.callback());
 const port = 7077;
-
 server.listen(port, (err) => {
   if (err) {
     console.log(err);
     return;
   }
-
   console.log('Server is running on port ' + port);
 });
