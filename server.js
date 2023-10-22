@@ -34,13 +34,15 @@ app.use(async (ctx, next) => {
   }
   
   const date = new Date();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
   const { name, description } = ctx.request.body;
   const Ticket = {
     id: uuidv4(),
     name,
     status: false,
     description,
-    created: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`
+    created: `${date.toLocaleDateString()} ${hours}:${minutes}`
   }
 
   cards.push(Ticket);
@@ -60,6 +62,31 @@ app.use(async (ctx, next) => {
   cards = cards.filter(ticket => ticket.id !== id);
   ctx.response.set('Access-Control-Allow-Origin', '*');
   ctx.response.body = 'Ticket deleted';
+  next()
+});
+
+// POST ?method=editById&id=<id>
+app.use(async (ctx, next) => {
+  if (ctx.method !== 'POST' || ctx.request.query.method !== 'editById') {
+    await next();
+    return;
+  }
+
+  const date = new Date();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const { id } = ctx.request.query;
+  const { name2, description2 } = ctx.request.body;
+  console.log(ctx.request.body)
+
+  const needCard = cards.find(ticket => ticket.id === id);
+
+  needCard.name = name2
+  needCard.description = description2
+  needCard.created = `${date.toLocaleDateString()} ${hours}:${minutes}`
+
+  ctx.response.set('Access-Control-Allow-Origin', '*');
+  ctx.response.body = 'Ticket edited';
   next()
 });
 
@@ -90,6 +117,23 @@ app.use(async (ctx, next) => {
   ctx.response.set('Access-Control-Allow-Origin', '*');
   ctx.response.type = 'application/json';
   ctx.response.body = JSON.stringify(ticket);
+  next()
+});
+
+// POST ?method=changeStateById
+app.use(async (ctx, next) => {
+  if (ctx.method !== 'POST' || ctx.request.query.method !== 'changeStateById') {
+    await next();
+    return;
+  }
+
+  const { id } = ctx.request.query;
+  let ticket = cards.find(el => el.id === id);
+  ticket.status = ctx.request.body
+
+  ctx.response.set('Access-Control-Allow-Origin', '*');
+  ctx.response.type = 'application/json';
+  ctx.response.body = 'Ticket changed';
   next()
 });
 
